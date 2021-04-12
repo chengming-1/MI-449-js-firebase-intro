@@ -28,30 +28,30 @@ function createWoofInDatabase (woof) { // eslint-disable-line no-unused-vars
 //  3. deleteWoofRow(<woofKey>)
 // Make sure to pass the correct parameters!
 function readWoofsInDatabase () {
-  db.collection('woofs').doc('child_added')
-    .get()
-    .then(function (newWoofSnapshot) {
-      addWoofRow(newWoofSnapshot.key, newWoofSnapshot)
-    })
-  db.collection('woofs').doc('child_changed')
-    .get().then(function (updateWoofSnapshot) {
-      updateWoofRow(updateWoofSnapshot.key, updateWoofSnapshot)
-    })
-  db.collection('woofs').doc('child_removed')
-    .get()
-    .then(function (deletedWoofSnapshot) {
-      deleteWoofRow(deletedWoofSnapshot.key)
+  db.collection('woofs')
+    .onSnapshot(function (snapshot) {
+      snapshot.docChanges().forEach(function (change) {
+        const woof = change.doc.data()
+        if (change.type === 'added') {
+          addWoofRow(woof.key, woof.val())
+        } else if (change.type === 'modified') {
+          updateWoofRow(woof.key, woof.val())
+        } else if (change.type === 'removed') {
+          deleteWoofRow(woof.key)
+        }
+      })
+      updateWoofInDatabase()
     })
 }
 
 // UPDATE the woof in the database
 function updateWoofInDatabase (woofKey, woofText) { // eslint-disable-line no-unused-vars
-  db.collection('woofs').doc('woofKey').set(woofText)// TODO update the document in the collection
+  db.collection('woofs').doc(woofKey).set({ woofText }, { merge: true })// TODO update the document in the collection
 }
 
 // DELETE the woof from the database
 function deleteWoofFromDatabase (woofKey) { // eslint-disable-line no-unused-vars
-  db.collection('woofs').child('woofKey').delete()// TODO delete the document from the collection
+  db.collection('woofs').doc(woofKey).delete()// TODO delete the document from the collection
 }
 
 // Load all of the data
