@@ -33,11 +33,11 @@ function readWoofsInDatabase () {
       snapshot.docChanges().forEach(function (change) {
         const woof = change.doc.data()
         if (change.type === 'added') {
-          addWoofRow(woof.key, woof.val())
+          addWoofRow(change.doc.id, woof)
         } else if (change.type === 'modified') {
-          updateWoofRow(woof.key, woof.val())
+          updateWoofRow(change.doc.id, woof)
         } else if (change.type === 'removed') {
-          deleteWoofRow(woof.key)
+          deleteWoofRow(change.doc.id)
         }
       })
       updateWoofInDatabase()
@@ -46,7 +46,7 @@ function readWoofsInDatabase () {
 
 // UPDATE the woof in the database
 function updateWoofInDatabase (woofKey, woofText) { // eslint-disable-line no-unused-vars
-  db.collection('woofs').doc(woofKey).set({ woofText }, { merge: true })// TODO update the document in the collection
+  db.collection('woofs').doc(woofKey).set({ text: woofText }, { merge: true })// TODO update the document in the collection
 }
 
 // DELETE the woof from the database
